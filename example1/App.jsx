@@ -31,8 +31,14 @@ export class App extends React.Component {
     for (let field of ['email', 'password', 'rePassword']) {
       state[field] = {value: '', message: '', showValidation: false}
     }
+
     this.state = state
     this.__validationData = []
+  }
+
+  static propTypes = {
+    checkTime: React.PropTypes.any,
+    typingPace: React.PropTypes.any,
   }
 
   setFieldState(field, newState) {
@@ -40,15 +46,16 @@ export class App extends React.Component {
   }
 
   handleValidation = (field) => ({validationResult, showValidation}) => {
-    this.__validationData.unshift({validationResult, showValidation})
+    if (field === 'email') {
+      this.__validationData.unshift({validationResult, showValidation})
+    }
     let {message, showValidation: show, valid} = {...this.state[field]}
 
     if (validationResult != null) {
       valid = validationResult.valid
-      let {error, rule} = validationResult
       if (valid == null) message = 'Validating...'
       if (valid === true) message = 'Valid!'
-      if (valid === false) message = `Invalid (rule: ${rule}, error: ${error})`
+      if (valid === false) message = `Invalid: ${validationResult.error}`
     }
 
     show = showValidation != null ? showValidation : show
@@ -67,7 +74,7 @@ export class App extends React.Component {
 
   allValid() {
     for (let field of ['email', 'password', 'rePassword']) {
-      if (this.state[field].valid === false) return false
+      if (!this.state[field].valid) return false
     }
     return true
   }
@@ -101,8 +108,8 @@ export class App extends React.Component {
                 hasFeedback
                 value={value} />
         </Col>
-        <Col md={4}>
-          <div>{showValidation ? message : null}</div>
+        <Col md={8}>
+          <div style={{paddingTop: 30}}>{showValidation ? message : null}</div>
         </Col>
       </Row>)
   }
@@ -119,10 +126,14 @@ export class App extends React.Component {
           <form onSubmit={this.onSubmit}>
             <Grid>
               {this.renderField('email', 'E-mail', this.state.email)}
-              <Validate onValidation={this.handleValidation('email')} >
+              <Validate
+                onValidation={this.handleValidation('email')}
+                maxTypingPace={this.props.typingPace}
+              >
                 <IsRequired key="is-required" value={email} />
                 <IsEmail key="is-email" value={email} />
-                <IsUnique time={1000} value={email} />
+                <IsUnique key="is-unique"
+                  time={this.props.checkTime} value={email} />
               </Validate>
 
               {this.renderField('password', 'Password', this.state.password)}
@@ -131,7 +142,7 @@ export class App extends React.Component {
                 args={{value: password}}
               >
                 <IsRequired key='is-required' />
-                <HasLength key='has-length' min={6} max={10} />
+                <HasLength key='has-length' min={6} />
                 <HasNumber key='has-number' />
               </Validate>
 
@@ -144,7 +155,7 @@ export class App extends React.Component {
               </Validate>
 
               <Row>
-                <Col>
+                <Col md={4}>
                   <Button
                     bsStyle="primary"
                     onClick={() => this.showAllValidations()}
@@ -156,9 +167,9 @@ export class App extends React.Component {
             </Grid>
           </form>
         </Panel>
-        <Panel header={"Validation Data"}>
-          {this.__validationData.map((data) => {
-            return <div>{JSON.stringify(data)}</div>
+        <Panel collapsible header={"Validation Data"}>
+          {this.__validationData.map((data, i) => {
+            return <div key={i}>{JSON.stringify(data)}</div>
           })}
         </Panel>
       </div>

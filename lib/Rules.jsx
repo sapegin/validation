@@ -21,7 +21,7 @@ export function IsRequired({value}) {
 
 export function HasNumber({value}) {
   return (value != null && value.match(/.*[0-9]+.*/i) != null) ?
-    valid() : invalid('This field should contain at least one number.')
+    valid() : invalid('This field should contain at least one digit.')
 }
 
 export function HasLength({value, min, max}) {
