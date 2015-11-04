@@ -36,3 +36,8 @@ export function HasLength({value, min, max}) {
   }
   return valid()
 }
+
+export function AreSame({value1, value2}) {
+  return value1 === value2 ?
+    valid() : invalid('Values have to match.')
+}

@@ -7,28 +7,25 @@ import {
   IsEmail,
   IsRequired,
   HasNumber,
-  HasLength} from '../lib/validation'
+  HasLength,
+  AreSame} from '../lib/validation'
 import {Input, Grid, Row, Col, Panel, Button} from 'react-bootstrap'
-import {valid, invalid} from '../lib/Rules'
 
 
 function IsUnique({value, time}) {
   let isValid = value.indexOf('used') === -1
-  let response = isValid ? valid() : invalid('The value is not unique.')
+  let response = isValid ? {valid: true} : {valid: false, reason: 'The value is not unique.'}
   return Promise.delay(time).then(() => response)
-}
-
-function AreSame({value1, value2}) {
-  return value1 === value2 ?
-    valid() : invalid('Values have to match.')
 }
 
 export class App extends React.Component {
 
+  fields = ['email', 'password', 'rePassword']
+
   constructor(props) {
     super(props)
     let state = {}
-    for (let field of ['email', 'password', 'rePassword']) {
+    for (let field of this.fields) {
       state[field] = {value: '', message: '', showValidation: false}
     }
 
@@ -73,14 +70,14 @@ export class App extends React.Component {
   }
 
   allValid() {
-    for (let field of ['email', 'password', 'rePassword']) {
+    for (let field of this.fields) {
       if (!this.state[field].valid) return false
     }
     return true
   }
 
   showAllValidations() {
-    for (let field of ['email', 'password', 'rePassword']) {
+    for (let field of this.fields) {
       this.showValidation(field)
     }
   }
